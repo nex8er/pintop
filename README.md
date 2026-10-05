@@ -1,44 +1,55 @@
 # PinTop
 
-Утилита для строки меню macOS (Apple Silicon, macOS 14+), которая держит выбранное окно поверх остальных — аналог PowerToys «Always on Top».
+**English** | [Русский](README.ru.md)
 
-## Возможности
+A macOS menu bar app (Apple Silicon, macOS 14+) that keeps the window you choose above all others, like PowerToys "Always on Top".
 
-- Горячая клавиша для закрепления и открепления активного окна (по умолчанию `⌃⌘T`).
-- Горячая клавиша «открепить все» (по умолчанию `⌃⇧⌘T`).
-- Закреплённое окно обводится рамкой: ширина, прозрачность, цвет, градиент (с анимацией по желанию) и внешнее свечение. Радиус скругления рамки повторяет радиус самого окна — он измеряется по прозрачным углам захваченного кадра.
-- Звуки при закреплении и откреплении (отключаются в настройках).
-- Иконка в строке меню: `mdi-pin` (F0403), когда закреплено хотя бы одно окно, и `mdi-pin-off` (F0404) в остальное время.
-- Меню: Pin/Unpin Active Window, Unpin All Windows, список закреплённых окон (клик открепляет окно), Settings…, Quit.
-- Настройки: запуск при входе, звуки, горячие клавиши, параметры рамки с живым превью, статус разрешений.
+## Features
 
-## Как это работает
+- Pin or unpin the active window with a shortcut (default `⌃⌘T`).
+- Unpin all windows with a shortcut (default `⌃⇧⌘T`).
+- Pinned windows get a border. You can set its width, opacity, color, gradient (optionally animated) and outer glow. The border's corner radius matches the window's own radius, measured from the transparent corners of the captured frame.
+- Sounds when a window is pinned or unpinned (can be turned off in Settings).
+- Menu bar icon: `mdi-pin` (F0403) when at least one window is pinned, `mdi-pin-off` (F0404) otherwise.
+- Menu: Pin/Unpin Active Window, Unpin All Windows, a list of pinned windows (click one to unpin it), Settings…, Quit.
+- Settings: a General tab (launch at login, sounds, shortcuts, permission status) and a Border Appearance tab (border options with a live preview).
 
-В macOS нет публичного API, который позволяет менять уровень окна **другого** приложения. Поэтому PinTop кладёт поверх закреплённого окна прозрачную плавающую панель:
+## Installation
 
-- **окно активно** — на панели видна только рамка, клики проходят к окну;
-- **окно на заднем плане** — панель показывает живую копию окна (ScreenCaptureKit), поэтому оно остаётся видимым поверх остальных. Клик по копии возвращает фокус настоящему окну, прокрутка передаётся в окно напрямую.
+1. Download `PinTop-<version>-arm64.zip` from [Releases](https://github.com/nex8er/pintop/releases/latest), unzip it and move `PinTop.app` to `/Applications`.
+2. The app is not notarized, so macOS blocks it on first launch. Click **Open Anyway** in **System Settings › Privacy & Security**, or run:
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/PinTop.app
+   ```
+3. Grant both permissions (see below) and restart PinTop.
 
-Рамка следует за окном при перемещении и изменении размера. Она скрывается, если окно свёрнуто, приложение скрыто или окно находится на другом рабочем столе (Space). При закрытии окна оно открепляется автоматически.
+## How it works
 
-## Разрешения
+macOS has no public API for changing the window level of **another** app's window. PinTop instead places a transparent floating panel over the pinned window:
 
-Нужны оба (System Settings › Privacy & Security):
+- **When the window is active**, the panel shows only the border, and clicks go through to the window.
+- **When the window is in the background**, the panel shows a live view of the window (ScreenCaptureKit), so it stays visible above other windows. Clicking the view focuses the real window, and scrolling is passed to the window directly.
 
-- **Accessibility** — чтобы находить активное окно, отслеживать его и передавать ему фокус;
-- **Screen & System Audio Recording** — для живой копии окна. После выдачи разрешения перезапустите PinTop.
+The border follows the window as you move or resize it. It hides when the window is minimized, its app is hidden, or the window is on another Space. Closing a window unpins it automatically.
 
-## Сборка
+## Permissions
+
+PinTop needs both of these (System Settings › Privacy & Security):
+
+- **Accessibility**, to find the active window, track it and focus it.
+- **Screen & System Audio Recording**, for the live view of the window. Restart PinTop after granting it.
+
+## Building
 
 ```bash
-scripts/build.sh            # собрать build/PinTop.app
-scripts/build.sh install    # собрать, установить в /Applications и запустить
+scripts/build.sh            # build build/PinTop.app
+scripts/build.sh install    # build, install to /Applications and launch
 ```
 
-Скрипт подписывает приложение первым найденным сертификатом `Apple Development` или `Developer ID`. Благодаря стабильной подписи выданные разрешения сохраняются при пересборке. Нужную подпись можно задать через `CODESIGN_IDENTITY`; значение `-` включает ad-hoc-подпись.
+The script signs the app with the first `Apple Development` or `Developer ID` certificate it finds. Because the signature stays the same, granted permissions survive rebuilds. To use a different identity, set `CODESIGN_IDENTITY`; `-` means ad-hoc signing.
 
-Опцию «Launch at login» лучше включать, когда приложение уже установлено в `/Applications`.
+Turn on "Launch at login" after the app is installed in `/Applications`.
 
-## Звуки
+## Sounds
 
-`Resources/Sounds/pin.caf` и `unpin.caf` — это `switch_007` и `switch_006` из набора [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) (лицензия CC0), сконвертированные в CAF. Чтобы поменять звуки, замените эти файлы и пересоберите приложение.
+`Resources/Sounds/pin.caf` and `unpin.caf` are `switch_007` and `switch_006` from [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) (CC0), converted to CAF. To change the sounds, replace these files and rebuild the app.
