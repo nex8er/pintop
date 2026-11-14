@@ -1,7 +1,9 @@
 #!/bin/bash
-# Builds PinTop.app (Apple Silicon) into ./build.
+# Builds PinTop.app for Apple Silicon or Intel into ./build.
 #   scripts/build.sh            – build and sign
 #   scripts/build.sh install    – also copy to /Applications and launch
+# Set ARCH to arm64 or x86_64 (defaults to the host architecture).
+# Set RELEASE_VERSION to stamp a release version into the app bundle.
 # Set CODESIGN_IDENTITY to override the signing identity ("-" for ad-hoc).
 set -euo pipefail
 
@@ -10,10 +12,19 @@ ROOT=$(pwd)
 APP_NAME=PinTop
 BUILD_DIR="$ROOT/build"
 APP="$BUILD_DIR/$APP_NAME.app"
+ARCH="${ARCH:-$(uname -m)}"
 
-echo "==> Compiling"
-swift build -c release --arch arm64
-BIN_DIR=$(swift build -c release --arch arm64 --show-bin-path)
+case "$ARCH" in
+    arm64|x86_64) ;;
+    *)
+        echo "Unsupported architecture: $ARCH (expected arm64 or x86_64)" >&2
+        exit 2
+        ;;
+esac
+
+echo "==> Compiling for $ARCH"
+swift build -c release --arch "$ARCH"
+BIN_DIR=$(swift build -c release --arch "$ARCH" --show-bin-path)
 
 if [[ ! -f "$ROOT/Resources/AppIcon.icns" ]]; then
     echo "==> Rendering app icon"
@@ -37,6 +48,12 @@ cp "$BIN_DIR/$APP_NAME" "$APP/Contents/MacOS/$APP_NAME"
 cp "$ROOT/Resources/Info.plist" "$APP/Contents/Info.plist"
 cp "$ROOT/Resources/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp -R "$ROOT/Resources/Sounds" "$APP/Contents/Resources/Sounds"
+
+if [[ -n "${RELEASE_VERSION:-}" ]]; then
+    RELEASE_VERSION="${RELEASE_VERSION#v}"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $RELEASE_VERSION" "$APP/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $RELEASE_VERSION" "$APP/Contents/Info.plist"
+fi
 
 # A stable signing identity keeps Accessibility / Screen Recording grants across rebuilds.
 IDENTITY="${CODESIGN_IDENTITY:-$(security find-identity -v -p codesigning \

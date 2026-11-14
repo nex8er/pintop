@@ -19,6 +19,12 @@ private class OverlayPanel: NSPanel {
 
     override var canBecomeKey: Bool { false }
     override var canBecomeMain: Bool { false }
+
+    /// The border extends beyond the target window for its stroke and glow. AppKit otherwise
+    /// moves an ordered panel back inside `visibleFrame`, shifting the border down at the top edge.
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect {
+        frameRect
+    }
 }
 
 /// The overlay for one pinned window: a click-through panel with the border and glow,

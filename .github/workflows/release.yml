@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x86_64
+            runner: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build app
+        env:
+          ARCH: ${{ matrix.arch }}
+          CODESIGN_IDENTITY: "-"
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: scripts/build.sh
+      - name: Package app
+        env:
+          ARCH: ${{ matrix.arch }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent build/PinTop.app "dist/PinTop-${VERSION#v}-${ARCH}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PinTop-${{ matrix.arch }}
+          path: dist/*.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish GitHub release
+    needs: package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/*.zip --verify-tag --generate-notes

@@ -2,7 +2,7 @@
 
 [English](README.md) | **Русский**
 
-Утилита для строки меню macOS (Apple Silicon, macOS 14+), которая держит выбранное окно поверх остальных — аналог PowerToys «Always on Top».
+Утилита для строки меню macOS (Apple Silicon и Intel, macOS 14+), которая держит выбранное окно поверх остальных — аналог PowerToys «Always on Top».
 
 ## Возможности
 
@@ -16,7 +16,7 @@
 
 ## Установка
 
-1. Скачайте `PinTop-<версия>-arm64.zip` со страницы [Releases](https://github.com/nex8er/pintop/releases/latest), распакуйте архив и перенесите `PinTop.app` в `/Applications`.
+1. Скачайте со страницы [Releases](https://github.com/nex8er/pintop/releases/latest) подходящий архив: `arm64` для Apple Silicon или `x86_64` для Intel. Распакуйте его и перенесите `PinTop.app` в `/Applications`.
 2. Приложение не нотаризовано, поэтому при первом запуске macOS его заблокирует. Нажмите **Open Anyway** в **System Settings › Privacy & Security** или выполните:
    ```bash
    xattr -dr com.apple.quarantine /Applications/PinTop.app
@@ -44,6 +44,7 @@
 ```bash
 scripts/build.sh            # собрать build/PinTop.app
 scripts/build.sh install    # собрать, установить в /Applications и запустить
+ARCH=x86_64 scripts/build.sh # собрать версию для Intel на Mac с Apple Silicon
 ```
 
 Скрипт подписывает приложение первым найденным сертификатом `Apple Development` или `Developer ID`. Благодаря стабильной подписи выданные разрешения сохраняются при пересборке. Нужную подпись можно задать через `CODESIGN_IDENTITY`; значение `-` включает ad-hoc-подпись.

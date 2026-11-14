@@ -2,7 +2,7 @@
 
 **English** | [Русский](README.ru.md)
 
-A macOS menu bar app (Apple Silicon, macOS 14+) that keeps the window you choose above all others, like PowerToys "Always on Top".
+A macOS menu bar app (Apple Silicon and Intel, macOS 14+) that keeps the window you choose above all others, like PowerToys "Always on Top".
 
 ## Features
 
@@ -16,7 +16,7 @@ A macOS menu bar app (Apple Silicon, macOS 14+) that keeps the window you choose
 
 ## Installation
 
-1. Download `PinTop-<version>-arm64.zip` from [Releases](https://github.com/nex8er/pintop/releases/latest), unzip it and move `PinTop.app` to `/Applications`.
+1. Download the matching archive from [Releases](https://github.com/nex8er/pintop/releases/latest): `arm64` for Apple Silicon or `x86_64` for Intel. Unzip it and move `PinTop.app` to `/Applications`.
 2. The app is not notarized, so macOS blocks it on first launch. Click **Open Anyway** in **System Settings › Privacy & Security**, or run:
    ```bash
    xattr -dr com.apple.quarantine /Applications/PinTop.app
@@ -44,6 +44,7 @@ PinTop needs both of these (System Settings › Privacy & Security):
 ```bash
 scripts/build.sh            # build build/PinTop.app
 scripts/build.sh install    # build, install to /Applications and launch
+ARCH=x86_64 scripts/build.sh # build an Intel version on an Apple Silicon Mac
 ```
 
 The script signs the app with the first `Apple Development` or `Developer ID` certificate it finds. Because the signature stays the same, granted permissions survive rebuilds. To use a different identity, set `CODESIGN_IDENTITY`; `-` means ad-hoc signing.
